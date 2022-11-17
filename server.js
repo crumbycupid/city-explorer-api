@@ -4,28 +4,30 @@
 
 const express = require('express');
 let data = require('./data/weather.json');
-
-
-
-
 require('dotenv').config();
-
-
+const axios = require('axios');
+const cors = require('cors');
 const app = express();
-
-
-
+app.use(cors());
 const PORT = process.env.PORT || 3002;
 
-/*app.get('/', (request, response) => {
+app.get('/', (request, response) => {
   response.send('Hello, from our server');
-});*/
+});
 
-app.get('/weather', (request, response) => {
-  let city_name = request.query.city_name;
-  let selectedCity = data.find(weather => weather.city_name === city_name);
-  let newCity = new City(selectedCity);
-  response.send(newCity);
+app.get('/weather', async (request, response, next) => {
+  try {
+    //console.log(request.query);
+    let cityInput = request.query;
+    let selectedCity = data.find(city => city.city_name.toLowerCase() === cityInput.city.toLowerCase());
+    //console.log(selectedCity, 'this is city weather');
+    let forecastArr = selectedCity.data.map(day => new Forecast(day));
+    console.log(forecastArr);
+    // let newCity = new City(selectedCity);
+    response.status(200).send(forecastArr);
+  } catch (error) {
+    next(error);
+  }
 });
 
 //'*' wild card
@@ -34,11 +36,14 @@ app.get('*', (request, response) => {
   response.send('That route does not exist');
 });
 
-class City {
-  constructor(cityObject){
-    this.lat = cityObject.data.lat;
-    this.lon = cityObject.data.lon;
-    this.searchQuery = cityObject.data;
+app.use((error, request, response, next) => {
+  response.status(500).send(error.message);
+});
+
+class Forecast {
+  constructor(day) {
+    this.date = day.valid_date;
+    this.description = day.weather.description;
   }
 }
 

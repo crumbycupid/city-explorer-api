@@ -9,7 +9,7 @@ Creating a backend server for my city explorer page.
 
 ## Getting Started
 
-Create a city, explorer api repo. Download packages, dependencies, etc. 
+Create a city, explorer api repo. Download packages, dependencies, etc.
 
 ## Architecture
 <!-- Provide a detailed description of the application design. What technologies (languages, libraries, etc) you're using, and any other relevant design information. -->
