@@ -3,7 +3,6 @@
 
 
 const express = require('express');
-let data = require('./data/weather.json');
 require('dotenv').config();
 const axios = require('axios');
 const cors = require('cors');
@@ -19,19 +18,28 @@ app.get('/weather', async (request, response, next) => {
   try {
     //console.log(request.query);
     let cityInput = request.query;
-    let selectedCity = data.find(city => city.city_name.toLowerCase() === cityInput.city.toLowerCase());
-    //console.log(selectedCity, 'this is city weather');
-    let forecastArr = selectedCity.data.map(day => new Forecast(day));
-    console.log(forecastArr);
-    // let newCity = new City(selectedCity);
-    response.status(200).send(forecastArr);
+    let lat = request.query.lat;
+    let lon = request.query.lon;
+    let weatherURL = '';
+    let searchQuerry = await axios.get(weatherURL);
+    let forecastArr = searchQuerry.data.data.map(day => new Forecast(day));
   } catch (error) {
     next(error);
   }
 });
 
-//'*' wild card
-//this will run for any route not defined above
+app.get('/movie', async(request, response) =>{
+  let searchTerm = request.query.search;
+  let movieURL = '';
+  let movieResults = await axios.get(movieURL);
+  let topMovies = movieResults.data.results.map(movie => new movie(movie));
+  topMovies.length < 1 ? response.status(500).send('Error, Movie not found.'):send(topMovies);
+});
+
+app.get(`/`, (request, response) => {
+  response.send('Hello, from our server');
+});
+
 app.get('*', (request, response) => {
   response.send('That route does not exist');
 });
@@ -43,8 +51,22 @@ app.use((error, request, response, next) => {
 class Forecast {
   constructor(day) {
     this.date = day.valid_date;
-    this.description = day.weather.description;
-  }
-}
+    this.description = day.weather.description.toLowerCase();
+    this.low = day.low_temp;
+    this.high = day.max_temp;
+    this.fullForecast = `Low of ${this.low}, high of ${this.high} with ${this.description}.`;
+  };
+};
+
+class Movie {
+  constructor (movies) {
+    this.title = movies.title
+    this.overview = movies.overview;
+    this.averageRating = movieObj.vote_average;
+    this.totalReviews = movieObj.vote_count;
+    this.imgPath = '';
+    this.releaseDate = movieObj.release_date;
+  };
+};
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
