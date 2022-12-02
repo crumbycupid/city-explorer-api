@@ -4,10 +4,10 @@ let cache = require('./cache');
 const axios = require('axios');
 require('dotenv').config();
 
-async function getMovie(request, response) {
-  let city = request.query.search;
-  const key = 'movie-' + city;
-  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&query=${city}`;
+async function getMovie(cityName) {
+
+  const key = 'movie-' + cityName;
+  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&query=${cityName}`;
 
   if (cache[key] && (Date.now() - cache[key].timestamp < 50000)) {
     console.log('Cache hit for movies');
@@ -18,11 +18,10 @@ async function getMovie(request, response) {
     cache[key].date = await axios.get(url)
       .then(response => parseMovie(response.data));
   }
-  response.send(cache[key].data);
+  return cache[key].data;
 }
 
 function parseMovie(movieData) {
-  console.log(movieData);
   try {
     const myMovie = movieData.results.map(day => {
       return new Movie(day);
@@ -39,7 +38,7 @@ class Movie {
     this.overview = movieObj.overview;
     this.avgRating = movieObj.vote_average;
     this.totalRevies = movieObj.vote_count;
-    this.imgPath = movieObj.poster_path ? 'https://image.tmdb.org/t/p/w500' + movieObj.poster_path : null;
+    this.img_url = movieObj.poster_path;
     this.releaseDate = movieObj.release_date;
   }
 }
