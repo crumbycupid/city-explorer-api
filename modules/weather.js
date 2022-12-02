@@ -1,12 +1,10 @@
 'use strict';
 
-let cache = require('./cache');
 const axios = require('axios');
 require('dotenv').config();
+let cache = require('./cache');
 
-async function getWeather(request, response) {
-  let lat = request.query.lat;
-  let lon = request.query.lon;
+async function getWeather(lat, lon) {
   const key = 'weather-' + lat + lon;
   const url = `http://api.weatherbit.io/v2.0/forecast/daily/?key=${process.env.WEATHER_API_KEY}&lang=en&lat=${lat}&lon=${lon}&days=5`;
 
@@ -21,7 +19,7 @@ async function getWeather(request, response) {
       .then(response => parseWeather(response.data));
   }
 
-  response.send(cache[key].data);
+  return cache[key].data;
 }
 
 function parseWeather(weatherData) {
@@ -37,8 +35,8 @@ function parseWeather(weatherData) {
 
 class Forecast {
   constructor(myCity) {
-    this.description = `Low of ${myCity.low_temp}, high of ${myCity.max_temp} with ${myCity.weather.description}`;
-    this.time = myCity.datetime;
+    this.description = myCity.weather.description;
+    this.date = myCity.datetime;
     /*this.date = myCity.valid_date;
     this.description = myCity.weather.description;
     this.low = myCity.low_temp;
